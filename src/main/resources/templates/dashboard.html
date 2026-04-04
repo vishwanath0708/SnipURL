@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>SnipURL · Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #0F2B3D;
+            --accent: #2D7A4B;
+            --accent-light: #3B9B62;
+            --gray-50: #F8FAFC;
+            --gray-100: #F1F5F9;
+            --gray-200: #E2E8F0;
+            --gray-300: #CBD5E1;
+            --gray-400: #94A3B8;
+            --gray-500: #64748B;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1E293B;
+            --gray-900: #0F172A;
+            --white: #FFFFFF;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08);
+            --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-800);
+            line-height: 1.5;
+        }
+
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(var(--gray-200) 1px, transparent 1px),
+                              linear-gradient(90deg, var(--gray-200) 1px, transparent 1px);
+            background-size: 48px 48px;
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .navbar {
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--gray-200);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .logo-icon {
+            background: var(--accent);
+            border-radius: 14px;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .user-info { display: flex; align-items: center; gap: 1rem; }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        .logout-btn {
+            background: transparent;
+            border: 1px solid var(--gray-300);
+            padding: 0.4rem 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .logout-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .welcome-banner {
+            background: linear-gradient(135deg, var(--primary) 0%, #0A1E2C 100%);
+            border-radius: 28px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+        .welcome-text h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+        .welcome-text p { color: rgba(255,255,255,0.7); }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 1.5rem;
+            border: 1px solid var(--gray-200);
+            transition: all 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--accent-light);
+        }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gray-100);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .stat-icon i { font-size: 1.5rem; color: var(--accent); }
+        .stat-value { font-size: 1.8rem; font-weight: 800; color: var(--gray-900); }
+        .stat-label { color: var(--gray-500); font-size: 0.8rem; margin-top: 0.25rem; }
+
+        .mode-toggle-wrapper { margin-bottom: 1.5rem; }
+        .mode-toggle {
+            display: inline-flex;
+            gap: 0.5rem;
+            background: var(--gray-100);
+            padding: 0.25rem;
+            border-radius: 60px;
+        }
+        .mode-btn {
+            padding: 0.6rem 1.8rem;
+            border-radius: 60px;
+            border: none;
+            background: transparent;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .mode-btn.active {
+            background: white;
+            box-shadow: var(--shadow-sm);
+            color: var(--accent);
+        }
+
+        .url-card {
+            background: var(--white);
+            border-radius: 28px;
+            border: 1px solid var(--gray-200);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-xl);
+        }
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .form-row .input-group { flex: 2; }
+        .form-row .date-group { flex: 1; }
+        .input-group { position: relative; }
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+        }
+        .input-group input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 2.8rem;
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 60px;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(45,122,75,0.1);
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 60px;
+            padding: 1rem;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-primary:hover {
+            background: var(--accent-light);
+            transform: translateY(-2px);
+        }
+        .result-box {
+            margin-top: 1.5rem;
+            background: var(--gray-50);
+            border-radius: 20px;
+            padding: 1rem;
+            display: none;
+            border: 1px solid var(--gray-200);
+        }
+
+        .links-card {
+            background: var(--white);
+            border-radius: 28px;
+            border: 1px solid var(--gray-200);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .card-header h3 { font-size: 1.3rem; font-weight: 600; }
+        .search-box { display: flex; gap: 0.5rem; }
+        .search-box input {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--gray-200);
+            border-radius: 40px;
+            background: var(--gray-50);
+        }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        th {
+            color: var(--gray-500);
+            font-weight: 500;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .short-code {
+            color: var(--accent);
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .analytics-btn {
+            background: transparent;
+            border: 1px solid var(--gray-300);
+            padding: 0.3rem 0.8rem;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .analytics-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: var(--white);
+            border-radius: 32px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 2rem;
+            position: relative;
+            animation: modalFadeIn 0.3s ease;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--gray-200);
+        }
+        .modal-header h3 { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--gray-500);
+            transition: 0.2s;
+        }
+        .close-modal:hover {
+            color: var(--accent);
+            transform: rotate(90deg);
+        }
+
+        .analytics-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .analytics-stat-card {
+            background: linear-gradient(135deg, var(--gray-50), white);
+            border-radius: 20px;
+            padding: 1.2rem;
+            text-align: center;
+            border: 1px solid var(--gray-200);
+            transition: 0.2s;
+        }
+        .analytics-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--accent);
+        }
+        .analytics-stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1.2;
+        }
+        .analytics-stat-label {
+            font-size: 0.7rem;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            margin-top: 0.3rem;
+        }
+
+        .chart-container {
+            background: var(--gray-50);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--gray-200);
+        }
+        .chart-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gray-700);
+        }
+        canvas { max-height: 280px; width: 100%; }
+
+        .insight-note {
+            background: linear-gradient(135deg, rgba(45,122,75,0.08), rgba(45,122,75,0.03));
+            border-radius: 16px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: var(--accent);
+            border-left: 3px solid var(--accent);
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .info-card {
+            background: var(--gray-50);
+            border-radius: 20px;
+            padding: 1.2rem;
+            border: 1px solid var(--gray-200);
+        }
+        .info-card h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gray-700);
+        }
+        .country-list, .device-list { list-style: none; }
+        .country-list li, .device-list li {
+            padding: 0.6rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--gray-200);
+            font-size: 0.85rem;
+        }
+        .percentage-bar {
+            width: 80px;
+            height: 6px;
+            background: var(--gray-300);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 3px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--gray-800);
+            color: white;
+            padding: 0.7rem 1.2rem;
+            border-radius: 40px;
+            z-index: 1100;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .loading { text-align: center; padding: 2rem; color: var(--gray-500); }
+        .empty-state { text-align: center; padding: 3rem; color: var(--gray-500); }
+        .empty-state i { font-size: 4rem; color: var(--gray-300); margin-bottom: 1rem; }
+
+        @media (max-width: 768px) {
+            .stats-grid, .analytics-stats-grid, .two-columns {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .welcome-banner { flex-direction: column; text-align: center; }
+            .form-row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<div class="bg-grid"></div>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="/dashboard" class="logo">
+            <div class="logo-icon"><i class="fas fa-link"></i></div>
+            <span>SnipURL</span>
+        </a>
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">U</div>
+            <span id="userName"></span>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+</nav>
+
+<div class="main-content">
+    <div class="welcome-banner">
+        <div class="welcome-text">
+            <h1>Welcome back, <span id="welcomeName"></span>! 👋</h1>
+            <p>Track, manage, and optimize all your shortened links from one dashboard.</p>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-link"></i></div><div class="stat-value" id="statTotalLinks">0</div><div class="stat-label">Total Links</div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-value" id="statTotalClicks">0</div><div class="stat-label">Total Clicks</div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-calendar-week"></i></div><div class="stat-value" id="statClicks7Days">0</div><div class="stat-label">Last 7 Days</div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-value" id="statActiveLinks">0</div><div class="stat-label">Active Links</div></div>
+    </div>
+
+    <div class="mode-toggle-wrapper">
+        <div class="mode-toggle">
+            <button class="mode-btn active" id="shortenModeBtn">🔗 Shorten URL</button>
+            <button class="mode-btn" id="expandModeBtn">🔍 Expand URL</button>
+        </div>
+    </div>
+
+    <div class="url-card">
+        <div id="shortenForm">
+            <div class="form-row">
+                <div class="input-group"><i class="fas fa-link input-icon"></i><input type="text" id="urlInput" placeholder="https://example.com/your-long-url"></div>
+                <div class="input-group date-group"><i class="fas fa-calendar-alt input-icon"></i><input type="date" id="expiryDate"></div>
+            </div>
+            <button class="btn-primary" id="createLinkBtn"><i class="fas fa-scissors"></i> Shorten URL</button>
+        </div>
+        <div id="expandForm" style="display: none;">
+            <div class="input-group"><i class="fas fa-link input-icon"></i><input type="text" id="expandInput" placeholder="Enter short code or URL (e.g., abc123)"></div>
+            <button class="btn-primary" id="expandLinkBtn"><i class="fas fa-expand"></i> Expand URL</button>
+        </div>
+        <div id="resultBox" class="result-box" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <span id="resultText" style="color: var(--accent); font-weight: 600; word-break: break-all;"></span>
+                <button id="copyResultBtn" style="background: white; border: 1px solid var(--gray-200); padding: 0.3rem 1rem; border-radius: 40px; cursor: pointer;">Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="links-card">
+        <div class="card-header">
+            <h3><i class="fas fa-table-list"></i> Your Links</h3>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search links...">
+                <button id="refreshBtn" style="background: var(--gray-100); border: none; border-radius: 40px; padding: 0.5rem 1rem; cursor: pointer;"><i class="fas fa-sync-alt"></i></button>
+            </div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Short URL</th><th>Original URL</th><th>Clicks</th><th>Created</th><th>Expires</th><th>Actions</th></tr></thead>
+                <tbody id="userUrlsList"><tr><td colspan="6"><div class="loading">Loading your links...</div></td></tr></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="analyticsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header"><h3 id="modalTitle"><i class="fas fa-chart-line"></i> Link Analytics</h3><button class="close-modal" onclick="closeModal()">&times;</button></div>
+        <div id="analyticsContent"><div class="loading">Loading analytics...</div></div>
+    </div>
+</div>
+
+<script>
+    const token = localStorage.getItem('snipurl_token');
+    const user = JSON.parse(localStorage.getItem('snipurl_user') || '{}');
+    if (!token) window.location.href = '/login';
+    const displayName = user.name || user.email?.split('@')[0] || 'User';
+    document.getElementById('userName').innerText = displayName;
+    document.getElementById('welcomeName').innerText = displayName;
+    document.getElementById('userAvatar').innerText = displayName.charAt(0).toUpperCase();
+    document.getElementById('logoutBtn').onclick = () => { localStorage.clear(); window.location.href = '/'; };
+
+    let currentMode = 'shorten';
+    let allUrls = [];
+    let analyticsChart = null;
+
+    function showToast(msg, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${msg}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    document.getElementById('shortenModeBtn').onclick = () => {
+        currentMode = 'shorten';
+        document.getElementById('shortenModeBtn').classList.add('active');
+        document.getElementById('expandModeBtn').classList.remove('active');
+        document.getElementById('shortenForm').style.display = 'block';
+        document.getElementById('expandForm').style.display = 'none';
+        document.getElementById('resultBox').style.display = 'none';
+    };
+    document.getElementById('expandModeBtn').onclick = () => {
+        currentMode = 'expand';
+        document.getElementById('expandModeBtn').classList.add('active');
+        document.getElementById('shortenModeBtn').classList.remove('active');
+        document.getElementById('shortenForm').style.display = 'none';
+        document.getElementById('expandForm').style.display = 'block';
+        document.getElementById('resultBox').style.display = 'none';
+    };
+
+    async function shortenUrl(longUrl, expiresAt) {
+        const body = { longUrl };
+        if (expiresAt) body.expiresAt = expiresAt;
+        const res = await fetch('/api/shorten', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(body)
+        });
+        if (!res.ok) throw new Error('Failed to shorten URL');
+        return await res.json();
+    }
+
+    async function expandUrl(shortCode) {
+        const res = await fetch(`/api/expand/${shortCode}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!res.ok) throw new Error('URL not found');
+        return await res.json();
+    }
+
+    async function fetchUserUrls() {
+        const res = await fetch('/api/user/urls', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!res.ok) return [];
+        return await res.json();
+    }
+
+    async function fetchAnalytics(shortCode) {
+        const res = await fetch(`/api/analytics/${shortCode}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!res.ok) throw new Error('Analytics not available');
+        return await res.json();
+    }
+
+    function updateStats(urls) {
+        const totalLinks = urls.length;
+        const totalClicks = urls.reduce((sum, u) => sum + (u.clickCount || 0), 0);
+        const activeLinks = urls.filter(u => !u.expiresAt || new Date(u.expiresAt) > new Date()).length;
+        document.getElementById('statTotalLinks').innerText = totalLinks;
+        document.getElementById('statTotalClicks').innerText = totalClicks;
+        document.getElementById('statActiveLinks').innerText = activeLinks;
+        document.getElementById('statClicks7Days').innerText = totalClicks;
+    }
+
+    async function renderTable(urls) {
+        const tbody = document.getElementById('userUrlsList');
+        if (!urls || urls.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-link"></i><p>No links yet. Create your first short URL above.</p></div></td></tr>`;
+            return;
+        }
+
+        // Fetch real click counts from analytics API for accurate display
+        const urlsWithRealClicks = await Promise.all(urls.map(async (url) => {
+            try {
+                const analytics = await fetchAnalytics(url.shortCode);
+                return { ...url, clickCount: analytics.totalClicks || 0 };
+            } catch (e) {
+                return { ...url, clickCount: url.clickCount || 0 };
+            }
+        }));
+
+        tbody.innerHTML = urlsWithRealClicks.map(url => `
+            <tr>
+                <td><span class="short-code" onclick="copyToClipboard('${window.location.origin}/${url.shortCode}')">${url.shortCode}</span></td>
+                <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${url.longUrl}">${url.longUrl?.substring(0, 50)}${url.longUrl?.length > 50 ? '...' : ''}</td>
+                <td><span class="stat-value" style="font-size: 1rem;">${url.clickCount || 0}</span></td>
+                <td>${url.createdAt ? new Date(url.createdAt).toLocaleDateString() : '-'}</td>
+                <td>${url.expiresAt ? new Date(url.expiresAt).toLocaleDateString() : 'Never'}</td>
+                <td><button class="analytics-btn" onclick="showAnalytics('${url.shortCode}')"><i class="fas fa-chart-line"></i> Analytics</button></td>
+            </tr>
+        `).join('');
+        updateStats(urlsWithRealClicks);
+    }
+
+    window.showAnalytics = async function(shortCode) {
+        const modal = document.getElementById('analyticsModal');
+        const content = document.getElementById('analyticsContent');
+        document.getElementById('modalTitle').innerHTML = `<i class="fas fa-chart-line"></i> Analytics for /${shortCode}`;
+        modal.style.display = 'flex';
+        content.innerHTML = '<div class="loading">Loading analytics...</div>';
+
+        try {
+            const data = await fetchAnalytics(shortCode);
+
+            if (!data || (data.totalClicks === 0 && (!data.dailyClicks || data.dailyClicks.length === 0))) {
+                content.innerHTML = `<div style="text-align: center; padding: 2rem;"><i class="fas fa-chart-line" style="font-size: 3rem; color: var(--gray-400); margin-bottom: 1rem;"></i><h3>No click data yet</h3><p style="color: var(--gray-500);">This link hasn't received any clicks yet.</p></div>`;
+                return;
+            }
+
+            const dailyLabels = data.dailyClicks?.map(d => d.date) || [];
+            const dailyCounts = data.dailyClicks?.map(d => d.count) || [];
+            const deviceTotal = data.deviceBreakdown ? Object.values(data.deviceBreakdown).reduce((a,b) => a + b, 0) : 0;
+            const maxClicks = dailyCounts.length > 0 ? Math.max(...dailyCounts) : 0;
+            const peakDay = dailyLabels[dailyCounts.indexOf(maxClicks)] || 'N/A';
+
+            content.innerHTML = `
+                <div class="analytics-stats-grid">
+                    <div class="analytics-stat-card"><div class="analytics-stat-number">${data.totalClicks || 0}</div><div class="analytics-stat-label">Total Clicks</div></div>
+                    <div class="analytics-stat-card"><div class="analytics-stat-number">${data.uniqueVisitors || 0}</div><div class="analytics-stat-label">Unique Visitors</div></div>
+                    <div class="analytics-stat-card"><div class="analytics-stat-number">${data.clicksLast7Days || 0}</div><div class="analytics-stat-label">Last 7 Days</div></div>
+                    <div class="analytics-stat-card"><div class="analytics-stat-number">${data.changePercentage || 0}%</div><div class="analytics-stat-label">Change</div></div>
+                </div>
+                <div class="chart-container"><div class="chart-title"><i class="fas fa-chart-bar"></i> Daily Click Performance</div><canvas id="analyticsChart" height="250"></canvas></div>
+                <div class="insight-note"><i class="fas fa-lightbulb"></i><strong>Insight:</strong> ${dailyCounts.length > 0 ? `Peak activity on ${peakDay} with ${maxClicks} clicks.` : 'No click data yet.'}</div>
+                <div class="two-columns">
+                    <div class="info-card"><h4><i class="fas fa-globe"></i> Top Countries</h4><ul class="country-list" id="countriesList"></ul></div>
+                    <div class="info-card"><h4><i class="fas fa-mobile-alt"></i> Device Breakdown</h4><ul class="device-list" id="devicesList"></ul></div>
+                </div>
+            `;
+
+            const ctx = document.getElementById('analyticsChart').getContext('2d');
+            if (analyticsChart) analyticsChart.destroy();
+            analyticsChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: dailyLabels, datasets: [{ label: 'Clicks', data: dailyCounts, backgroundColor: 'rgba(45,122,75,0.7)', borderColor: '#2D7A4B', borderWidth: 2, borderRadius: 8, barPercentage: 0.65 }] },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1E293B' } }, scales: { y: { beginAtZero: true, grid: { color: '#E2E8F0' }, ticks: { stepSize: 1 } }, x: { grid: { display: false } } }, animation: { duration: 1000 } }
+            });
+
+            const countriesList = document.getElementById('countriesList');
+            if (data.topCountries?.length) {
+                countriesList.innerHTML = data.topCountries.map(c => `<li><span>${c.country}</span><div style="display: flex; align-items: center; gap: 0.8rem;"><div class="percentage-bar"><div class="bar-fill" style="width: ${Math.min(c.percentage, 100)}%"></div></div><span>${c.percentage}%</span></div></li>`).join('');
+            } else { countriesList.innerHTML = '<li>No country data yet</li>'; }
+
+            const devicesList = document.getElementById('devicesList');
+            if (data.deviceBreakdown && Object.keys(data.deviceBreakdown).length > 0) {
+                devicesList.innerHTML = Object.entries(data.deviceBreakdown).map(([device, count]) => {
+                    const percentage = deviceTotal > 0 ? Math.round((count / deviceTotal) * 100) : 0;
+                    return `<li><span><i class="fas ${device === 'Desktop' ? 'fa-desktop' : 'fa-mobile-alt'}"></i> ${device}</span><span>${count} clicks (${percentage}%)</span></li>`;
+                }).join('');
+            } else { devicesList.innerHTML = '<li>No device data yet</li>'; }
+        } catch (err) {
+            content.innerHTML = `<div style="text-align: center; color: #EF4444;">Failed to load analytics: ${err.message}</div>`;
+        }
+    };
+
+    function closeModal() { document.getElementById('analyticsModal').style.display = 'none'; if (analyticsChart) analyticsChart.destroy(); analyticsChart = null; }
+    window.closeModal = closeModal;
+    window.copyToClipboard = (text) => { navigator.clipboard.writeText(text); showToast('Copied!'); };
+
+    document.getElementById('createLinkBtn').onclick = async () => {
+        const longUrl = document.getElementById('urlInput').value.trim();
+        if (!longUrl) return showToast('Enter a URL', 'error');
+        if (!/^https?:\/\//i.test(longUrl)) return showToast('Invalid URL format', 'error');
+        const expiryDate = document.getElementById('expiryDate').value;
+        const expiresAt = expiryDate ? new Date(expiryDate).toISOString() : null;
+        const btn = document.getElementById('createLinkBtn');
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Shortening...';
+        try {
+            const data = await shortenUrl(longUrl, expiresAt);
+            document.getElementById('resultText').innerText = data.shortUrl;
+            document.getElementById('resultBox').style.display = 'block';
+            showToast('Short link created! 🎉');
+            document.getElementById('urlInput').value = '';
+            document.getElementById('expiryDate').value = '';
+            await loadUserUrls();
+            setTimeout(() => { document.getElementById('resultBox').style.display = 'none'; }, 5000);
+        } catch (err) { showToast(err.message, 'error'); }
+        finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-scissors"></i> Shorten URL'; }
+    };
+
+    document.getElementById('expandLinkBtn').onclick = async () => {
+        let input = document.getElementById('expandInput').value.trim();
+        if (!input) return showToast('Enter a short code or URL', 'error');
+        let shortCode = input.includes('/') ? input.split('/').pop() : input;
+        const btn = document.getElementById('expandLinkBtn');
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Expanding...';
+        try {
+            const data = await expandUrl(shortCode);
+            document.getElementById('resultText').innerText = data.longUrl;
+            document.getElementById('resultBox').style.display = 'block';
+            showToast('URL expanded!');
+            setTimeout(() => { document.getElementById('resultBox').style.display = 'none'; }, 5000);
+        } catch (err) { showToast(err.message, 'error'); }
+        finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-expand"></i> Expand URL'; }
+    };
+
+    document.getElementById('copyResultBtn').onclick = () => { const text = document.getElementById('resultText').innerText; if (text) { navigator.clipboard.writeText(text); showToast('Copied!'); } };
+
+    async function loadUserUrls() {
+        try {
+            const urls = await fetchUserUrls();
+            allUrls = urls;
+            await renderTable(urls);
+        } catch (err) {
+            document.getElementById('userUrlsList').innerHTML = '<tr><td colspan="6" style="text-align: center; color: #EF4444;">Failed to load links</td></tr>';
+        }
+    }
+
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filtered = allUrls.filter(url => url.shortCode.toLowerCase().includes(searchTerm) || url.longUrl?.toLowerCase().includes(searchTerm));
+        renderTable(filtered);
+    });
+    document.getElementById('refreshBtn').onclick = () => { loadUserUrls(); document.getElementById('searchInput').value = ''; };
+    window.onclick = (event) => { if (event.target === document.getElementById('analyticsModal')) closeModal(); };
+
+    loadUserUrls();
+    setInterval(() => { loadUserUrls(); }, 30000);
+</script>
+</body>
+</html>

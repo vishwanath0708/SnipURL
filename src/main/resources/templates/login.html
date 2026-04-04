@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnipURL · Sign in to your account</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background Banner */
+        .bg-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+        }
+
+        .bg-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.1"><path fill="white" d="M20,20 L30,20 L25,30 Z M50,50 L60,50 L55,60 Z M80,80 L90,80 L85,90 Z M20,80 L30,80 L25,90 Z M80,20 L90,20 L85,30 Z"/><circle cx="50" cy="50" r="2"/><circle cx="20" cy="80" r="1.5"/><circle cx="80" cy="20" r="1.5"/></svg>');
+            background-repeat: repeat;
+            background-size: 60px;
+            opacity: 0.15;
+        }
+
+        /* Animated gradient overlay */
+        .bg-banner::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 40%, rgba(45,122,75,0.3), transparent 60%);
+            animation: rotate 25s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(45,122,75,0.3);
+            border-radius: 50%;
+            animation: float 8s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+            50% { transform: translateY(-30px) translateX(20px); opacity: 0.6; }
+        }
+
+        /* Hero Banner Text */
+        .hero-banner {
+            position: fixed;
+            left: 5%;
+            top: 50%;
+            transform: translateY(-50%);
+            max-width: 450px;
+            color: white;
+            z-index: 1;
+            display: none;
+        }
+
+        @media (min-width: 1024px) {
+            .hero-banner { display: block; }
+            body { justify-content: flex-end; padding-right: 8%; }
+        }
+
+        .hero-banner h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero-banner .gradient-text {
+            background: linear-gradient(120deg, #2D7A4B, #60A5FA);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .hero-banner p {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .stats-badge {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .stats-badge div {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 40px;
+            padding: 0.3rem 1rem;
+            font-size: 0.7rem;
+        }
+
+        /* Auth Card */
+        .auth-card {
+            background: rgba(255,255,255,0.98);
+            border-radius: 32px;
+            border: 1px solid rgba(226,232,240,0.5);
+            padding: 2rem;
+            max-width: 450px;
+            width: 90%;
+            margin: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo { text-align: center; margin-bottom: 2rem; }
+        .logo span { font-weight: 800; font-size: 1.5rem; color: #0F172A; }
+
+        .toggle-buttons { display: flex; gap: 0.5rem; background: #F1F5F9; padding: 0.25rem; border-radius: 60px; margin-bottom: 2rem; }
+        .toggle-btn { flex: 1; padding: 0.75rem; border: none; background: transparent; border-radius: 60px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .toggle-btn.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); color: #2D7A4B; }
+
+        .input-group { position: relative; margin-bottom: 1.2rem; }
+        .input-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #94A3B8; }
+        .input-group input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 2.8rem;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 60px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .input-group input:focus { outline: none; border-color: #2D7A4B; box-shadow: 0 0 0 3px rgba(45,122,75,0.1); }
+
+        .btn-primary {
+            width: 100%;
+            background: #2D7A4B;
+            color: white;
+            border: none;
+            border-radius: 60px;
+            padding: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-primary:hover { background: #3B9B62; transform: translateY(-2px); }
+
+        .form-footer { text-align: center; margin-top: 1.2rem; font-size: 0.8rem; color: #64748B; }
+        .form-footer a { color: #2D7A4B; text-decoration: none; cursor: pointer; font-weight: 500; }
+
+        .hidden { display: none; }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #1E293B;
+            color: white;
+            padding: 0.7rem 1.2rem;
+            border-radius: 40px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .trust-badge-row {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .trust-badge {
+            font-size: 0.65rem;
+            color: #64748B;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Animated Background Banner -->
+<div class="bg-banner"></div>
+<div class="particles" id="particles"></div>
+
+<!-- Hero Banner Text (visible on larger screens) -->
+<div class="hero-banner">
+    <h1>Shorten, brand & <span class="gradient-text">track every click</span></h1>
+    <p>Join 50,000+ businesses that trust SnipURL for enterprise-grade link management, powerful analytics, and real-time insights.</p>
+    <div class="stats-badge">
+        <div><i class="fas fa-chart-line"></i> 1.2B+ clicks/mo</div>
+        <div><i class="fas fa-globe"></i> 190+ countries</div>
+        <div><i class="fas fa-clock"></i> &lt;50ms latency</div>
+    </div>
+</div>
+
+<!-- Auth Card -->
+<div class="auth-card">
+    <div class="logo"><i class="fas fa-link" style="color: #2D7A4B; font-size: 2rem;"></i><span> SnipURL</span></div>
+
+    <div class="toggle-buttons">
+        <button class="toggle-btn active" id="loginTabBtn">Sign in</button>
+        <button class="toggle-btn" id="signupTabBtn">Create account</button>
+    </div>
+
+    <div id="loginForm">
+        <div class="input-group"><i class="fas fa-envelope input-icon"></i><input type="email" id="loginEmail" placeholder="Email address"></div>
+        <div class="input-group"><i class="fas fa-lock input-icon"></i><input type="password" id="loginPassword" placeholder="Password"></div>
+        <button class="btn-primary" id="loginBtn">Sign in</button>
+        <div class="form-footer">Don't have an account? <a id="switchToSignup">Create one</a></div>
+    </div>
+
+    <div id="signupForm" class="hidden">
+        <div class="input-group"><i class="fas fa-user input-icon"></i><input type="text" id="signupName" placeholder="Full name"></div>
+        <div class="input-group"><i class="fas fa-envelope input-icon"></i><input type="email" id="signupEmail" placeholder="Email address"></div>
+        <div class="input-group"><i class="fas fa-lock input-icon"></i><input type="password" id="signupPassword" placeholder="Password (min 6 characters)"></div>
+        <button class="btn-primary" id="signupBtn">Create account</button>
+        <div class="form-footer">Already have an account? <a id="switchToLogin">Sign in</a></div>
+    </div>
+
+    <div class="trust-badge-row">
+        <span class="trust-badge"><i class="fas fa-shield-alt"></i> SOC2 Type II</span>
+        <span class="trust-badge"><i class="fas fa-lock"></i> 256-bit SSL</span>
+        <span class="trust-badge"><i class="fas fa-euro-sign"></i> GDPR ready</span>
+        <span class="trust-badge"><i class="fas fa-headset"></i> 24/7 support</span>
+    </div>
+</div>
+
+<script>
+    // Generate floating particles
+    function createParticles() {
+        const container = document.getElementById('particles');
+        for (let i = 0; i < 30; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            const size = Math.random() * 8 + 2;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 8 + 's';
+            particle.style.animationDuration = (Math.random() * 10 + 5) + 's';
+            container.appendChild(particle);
+        }
+    }
+    createParticles();
+
+    function showToast(msg) {
+        const t = document.createElement('div');
+        t.className = 'toast';
+        t.innerHTML = '<i class="fas fa-info-circle"></i> ' + msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 3000);
+    }
+
+    const loginTab = document.getElementById('loginTabBtn'), signupTab = document.getElementById('signupTabBtn'), loginForm = document.getElementById('loginForm'), signupForm = document.getElementById('signupForm');
+    loginTab.onclick = () => { loginForm.classList.remove('hidden'); signupForm.classList.add('hidden'); loginTab.classList.add('active'); signupTab.classList.remove('active'); };
+    signupTab.onclick = () => { signupForm.classList.remove('hidden'); loginForm.classList.add('hidden'); signupTab.classList.add('active'); loginTab.classList.remove('active'); };
+    document.getElementById('switchToSignup')?.addEventListener('click', () => signupTab.click());
+    document.getElementById('switchToLogin')?.addEventListener('click', () => loginTab.click());
+
+    document.getElementById('loginBtn').onclick = async () => {
+        const email = document.getElementById('loginEmail').value.trim(), password = document.getElementById('loginPassword').value;
+        if (!email || !password) return showToast('Enter email and password');
+        try {
+            const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message);
+            localStorage.setItem('snipurl_token', data.token);
+            localStorage.setItem('snipurl_user', JSON.stringify({ email: data.email, name: data.name }));
+            window.location.href = '/dashboard';
+        } catch (err) { showToast(err.message); }
+    };
+
+    document.getElementById('signupBtn').onclick = async () => {
+        const name = document.getElementById('signupName').value.trim(), email = document.getElementById('signupEmail').value.trim(), password = document.getElementById('signupPassword').value;
+        if (!email || !password) return showToast('Email and password required');
+        if (password.length < 6) return showToast('Password min 6 characters');
+        try {
+            const res = await fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, name }) });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message);
+            localStorage.setItem('snipurl_token', data.token);
+            localStorage.setItem('snipurl_user', JSON.stringify({ email: data.email, name: data.name }));
+            window.location.href = '/dashboard';
+        } catch (err) { showToast(err.message); }
+    };
+
+    // Enter key support
+    document.getElementById('loginPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') document.getElementById('loginBtn').click(); });
+    document.getElementById('signupPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') document.getElementById('signupBtn').click(); });
+</script>
+</body>
+</html>

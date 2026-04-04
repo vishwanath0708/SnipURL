@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnipURL · Smart Link Management Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #F8FAFC; color: #1E293B; }
+        .navbar { background: rgba(255,255,255,0.96); backdrop-filter: blur(12px); border-bottom: 1px solid #E2E8F0; position: sticky; top: 0; z-index: 100; padding: 1rem 2rem; }
+        .nav-container { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 0.75rem; font-weight: 800; font-size: 1.5rem; color: #0F172A; text-decoration: none; }
+        .logo-icon { background: #2D7A4B; border-radius: 14px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; color: white; }
+        .btn-login { background: transparent; border: 1px solid #CBD5E1; padding: 0.5rem 1.3rem; border-radius: 40px; text-decoration: none; color: #475569; transition: 0.2s; }
+        .btn-login:hover { border-color: #2D7A4B; color: #2D7A4B; }
+        .btn-signup { background: #2D7A4B; border: none; padding: 0.5rem 1.3rem; border-radius: 40px; color: white; text-decoration: none; transition: 0.2s; }
+        .btn-signup:hover { background: #3B9B62; transform: translateY(-2px); }
+        .btn-large { background: #2D7A4B; color: white; padding: 1rem 2rem; border-radius: 60px; text-decoration: none; font-weight: 600; display: inline-block; margin-top: 1rem; transition: 0.2s; }
+        .btn-large:hover { background: #3B9B62; transform: translateY(-2px); }
+        .hero { text-align: center; padding: 80px 20px 60px; background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%); }
+        .hero h1 { font-size: 3.5rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -1px; }
+        .gradient-text { background: linear-gradient(120deg, #2D7A4B, #2C7A4B); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        .hero p { color: #64748B; max-width: 600px; margin: 1rem auto; font-size: 1.1rem; }
+        .trust-badge-row { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin: 2rem 0; }
+        .trust-badge { background: white; border-radius: 40px; padding: 0.4rem 1.2rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid #E2E8F0; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; max-width: 1200px; margin: 3rem auto; padding: 0 2rem; }
+        .stat-card { background: white; border-radius: 24px; padding: 1.5rem; text-align: center; border: 1px solid #E2E8F0; transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .stat-number { font-size: 2.2rem; font-weight: 800; color: #2D7A4B; }
+        .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; max-width: 1200px; margin: 3rem auto; padding: 0 2rem; }
+        .feature-card { background: white; border-radius: 24px; padding: 2rem; text-align: center; border: 1px solid #E2E8F0; transition: all 0.2s; }
+        .feature-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-color: #2D7A4B; }
+        .feature-card i { font-size: 2.5rem; color: #2D7A4B; margin-bottom: 1rem; }
+        .testimonial-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; max-width: 1200px; margin: 3rem auto; padding: 0 2rem; }
+        .testimonial-card { background: white; border-radius: 24px; padding: 1.8rem; border: 1px solid #E2E8F0; }
+        .stars { color: #fbbf24; margin-bottom: 1rem; }
+        .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; max-width: 1200px; margin: 3rem auto; padding: 0 2rem; }
+        .pricing-card { background: white; border-radius: 24px; padding: 2rem; text-align: center; border: 1px solid #E2E8F0; transition: 0.2s; }
+        .pricing-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .pricing-card.featured { border-color: #2D7A4B; box-shadow: 0 10px 15px -3px rgba(45,122,75,0.2); }
+        .pricing-price { font-size: 2.5rem; font-weight: 800; color: #2D7A4B; margin: 1rem 0; }
+        .pricing-btn { background: transparent; border: 1px solid #CBD5E1; padding: 0.6rem 1.5rem; border-radius: 40px; text-decoration: none; color: #475569; display: inline-block; margin-top: 1rem; transition: 0.2s; }
+        .pricing-btn.featured-btn { background: #2D7A4B; border: none; color: white; }
+        .pricing-btn:hover { background: #2D7A4B; color: white; border-color: #2D7A4B; }
+        .cta-section { background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: white; text-align: center; padding: 4rem 2rem; margin-top: 4rem; }
+        .cta-section h2 { font-size: 2rem; margin-bottom: 1rem; }
+        .cta-section p { max-width: 600px; margin: 0 auto 2rem; color: #94A3B8; }
+        .btn-cta { background: #2D7A4B; color: white; padding: 1rem 2rem; border-radius: 60px; text-decoration: none; font-weight: 600; display: inline-block; }
+        .footer { background: #0F172A; color: #94A3B8; padding: 3rem 2rem 2rem; margin-top: 0; }
+        .footer-container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem; }
+        .footer a { color: #94A3B8; text-decoration: none; display: block; margin-bottom: 0.5rem; font-size: 0.85rem; }
+        .footer a:hover { color: #2D7A4B; }
+        .footer-bottom { text-align: center; padding-top: 2rem; border-top: 1px solid #1E293B; margin-top: 2rem; }
+        @media (max-width: 768px) {
+            .features, .testimonial-grid, .pricing-grid, .stats-grid, .footer-container { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 2rem; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="/" class="logo"><div class="logo-icon"><i class="fas fa-link"></i></div><span>SnipURL</span></a>
+        <div><a href="/login" class="btn-login">Sign in</a><a href="/login" class="btn-signup" style="margin-left: 0.5rem;">Get started</a></div>
+    </div>
+</nav>
+
+<div class="hero">
+    <h1>Shorten, brand & <span class="gradient-text">track every click</span></h1>
+    <p>Enterprise-grade link management with powerful analytics, custom domains, and real-time insights trusted by 50,000+ businesses.</p>
+    <a href="/login" class="btn-large">Start free trial →</a>
+    <div class="trust-badge-row">
+        <span class="trust-badge"><i class="fas fa-chart-line"></i> 1.2B+ clicks/month</span>
+        <span class="trust-badge"><i class="fas fa-globe"></i> 190+ countries</span>
+        <span class="trust-badge"><i class="fas fa-clock"></i> &lt;50ms latency</span>
+        <span class="trust-badge"><i class="fas fa-shield-alt"></i> 99.99% uptime SLA</span>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card"><div class="stat-number">50M+</div><div>Links created</div><div style="font-size:0.75rem; color:#64748B; margin-top:0.5rem;">by businesses worldwide</div></div>
+    <div class="stat-card"><div class="stat-number">1.2B</div><div>Monthly clicks</div><div style="font-size:0.75rem; color:#64748B; margin-top:0.5rem;">processed securely</div></div>
+    <div class="stat-card"><div class="stat-number">99.99%</div><div>Uptime guarantee</div><div style="font-size:0.75rem; color:#64748B; margin-top:0.5rem;">enterprise SLA</div></div>
+    <div class="stat-card"><div class="stat-number">190+</div><div>Countries served</div><div style="font-size:0.75rem; color:#64748B; margin-top:0.5rem;">global CDN network</div></div>
+</div>
+
+<div class="features">
+    <div class="feature-card"><i class="fas fa-chart-line"></i><h3>Real-time analytics</h3><p>Track clicks, geography, devices, and referral sources live. Know exactly who clicks your links.</p></div>
+    <div class="feature-card"><i class="fas fa-tag"></i><h3>Custom branded links</h3><p>Use your own domain to build trust and increase click-through rates by up to 34%.</p></div>
+    <div class="feature-card"><i class="fas fa-shield-alt"></i><h3>Enterprise security</h3><p>SOC2 Type II, GDPR compliant, SSO integration, and 256-bit encryption.</p></div>
+    <div class="feature-card"><i class="fas fa-qrcode"></i><h3>QR code generation</h3><p>Generate QR codes for every short link instantly. Perfect for print and offline campaigns.</p></div>
+    <div class="feature-card"><i class="fas fa-clock"></i><h3>Link expiration</h3><p>Set expiry dates for temporary campaigns. Links automatically expire and get deleted.</p></div>
+    <div class="feature-card"><i class="fas fa-code"></i><h3>RESTful API</h3><p>Integrate link shortening into your apps with our powerful API and webhooks.</p></div>
+</div>
+
+<div class="testimonial-grid">
+    <div class="testimonial-card"><div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div><p>"SnipURL reduced our link management time by 70%. The analytics are incredibly detailed and the API is flawless."</p><strong>— Sarah Chen, Marketing Director</strong><div style="margin-top:0.5rem; font-size:0.75rem; color:#64748B;">Fortune 500 Company</div></div>
+    <div class="testimonial-card"><div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div><p>"Best URL shortener for enterprise. The security features, SSO integration, and audit logs are top-notch."</p><strong>— Michael Rodriguez, CTO</strong><div style="margin-top:0.5rem; font-size:0.75rem; color:#64748B;">SaaS Platform</div></div>
+    <div class="testimonial-card"><div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div><p>"Custom branded links increased our click-through rate by 28%. The real-time analytics helped us optimize campaigns."</p><strong>— Emily Watson, Growth Lead</strong><div style="margin-top:0.5rem; font-size:0.75rem; color:#64748B;">E-commerce Brand</div></div>
+</div>
+
+<div class="pricing-grid">
+    <div class="pricing-card"><h3>Free</h3><div class="pricing-price">$0</div><p>100 links/month</p><p>Basic analytics</p><p>7-day link expiry</p><p>Email support</p><a href="/login" class="pricing-btn">Get started</a></div>
+    <div class="pricing-card featured"><h3>Pro</h3><div class="pricing-price">$29</div><p>10,000 links/month</p><p>Advanced analytics</p><p>Custom domains</p><p>Priority support</p><a href="/login" class="pricing-btn featured-btn">Start free trial</a></div>
+    <div class="pricing-card"><h3>Enterprise</h3><div class="pricing-price">Custom</div><p>Unlimited links</p><p>SSO & audit logs</p><p>SLA guarantee</p><p>Dedicated support</p><a href="/login" class="pricing-btn">Contact sales</a></div>
+</div>
+
+<div class="cta-section">
+    <h2>Ready to grow your business?</h2>
+    <p>Join 50,000+ businesses that trust SnipURL to manage their links and drive engagement.</p>
+    <a href="/login" class="btn-cta">Start free trial →</a>
+</div>
+
+<footer class="footer">
+    <div class="footer-container">
+        <div><div class="logo" style="margin-bottom:1rem;"><div class="logo-icon"><i class="fas fa-link"></i></div><span style="color:white;">SnipURL</span></div><p>Enterprise-grade link management platform trusted by 50,000+ businesses worldwide.</p></div>
+        <div><h4 style="color:white; margin-bottom:1rem;">Product</h4><a href="#">Features</a><a href="#">Pricing</a><a href="#">Enterprise</a><a href="#">Security</a></div>
+        <div><h4 style="color:white; margin-bottom:1rem;">Resources</h4><a href="#">Documentation</a><a href="#">API Reference</a><a href="#">Status</a><a href="#">Blog</a></div>
+        <div><h4 style="color:white; margin-bottom:1rem;">Company</h4><a href="#">About</a><a href="#">Careers</a><a href="#">Privacy</a><a href="#">Terms</a></div>
+    </div>
+    <div class="footer-bottom"><p>© 2025 SnipURL — Intelligent link management. All rights reserved.</p></div>
+</footer>
+</body>
+</html>

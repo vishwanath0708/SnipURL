@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnipURL - Professional URL Shortener</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<!-- Navigation Bar -->
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="logo">
+            <i class="fas fa-link"></i>
+            <span>SnipURL</span>
+        </div>
+        <div class="nav-links">
+            <a href="#home" class="active">Home</a>
+            <a href="#features">Features</a>
+            <a href="#dashboard">Dashboard</a>
+            <a href="#analytics">Analytics</a>
+        </div>
+        <div class="nav-actions">
+            <button class="btn-login">Sign In</button>
+            <button class="btn-signup">Get Started</button>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero" id="home">
+    <div class="hero-container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="fas fa-bolt"></i>
+                <span>Fast & Reliable URL Shortener</span>
+            </div>
+            <h1 class="hero-title">
+                Shorten Your URLs with
+                <span class="gradient-text">Confidence</span>
+            </h1>
+            <p class="hero-description">
+                Transform long, complex URLs into clean, memorable short links.
+                Track clicks, analyze traffic, and optimize your marketing campaigns.
+            </p>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-number">50M+</span>
+                    <span class="stat-label">Links Created</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">1B+</span>
+                    <span class="stat-label">Clicks Tracked</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">99.9%</span>
+                    <span class="stat-label">Uptime</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="floating-card">
+                <i class="fas fa-chart-line"></i>
+                <p>Real-time Analytics</p>
+            </div>
+            <div class="floating-card">
+                <i class="fas fa-qrcode"></i>
+                <p>QR Codes</p>
+            </div>
+            <div class="floating-card">
+                <i class="fas fa-customize"></i>
+                <p>Custom Aliases</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- URL Shortener Main Card -->
+<section class="shortener-section">
+    <div class="container">
+        <div class="shortener-card">
+            <div class="card-header">
+                <h2>Create Short Link</h2>
+                <p>Paste your long URL below and get a shortened link instantly</p>
+            </div>
+
+            <div class="shortener-form">
+                <div class="input-group">
+                    <i class="fas fa-link input-icon"></i>
+                    <input
+                            type="url"
+                            id="longUrl"
+                            placeholder="https://example.com/very/long/url/that/needs/shortening"
+                            required
+                    >
+                </div>
+
+                <div class="options-group">
+                    <div class="option">
+                        <i class="fas fa-tag"></i>
+                        <input
+                                type="text"
+                                id="customAlias"
+                                placeholder="Custom alias (optional)"
+                        >
+                    </div>
+                    <div class="option">
+                        <i class="far fa-calendar-alt"></i>
+                        <input
+                                type="text"
+                                id="expiryDate"
+                                placeholder="Expiry date (optional)"
+                                onfocus="(this.type='date')"
+                                onblur="if(!this.value) this.type='text'"
+                        >
+                    </div>
+                </div>
+
+                <button class="btn-shorten" id="shortenBtn">
+                    <i class="fas fa-cut"></i>
+                    Shorten URL
+                </button>
+            </div>
+
+            <!-- Result Section -->
+            <div class="result-section" id="resultSection" style="display: none;">
+                <div class="result-header">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>Your shortened URL is ready!</h3>
+                </div>
+                <div class="result-url">
+                    <div class="short-url-display" id="shortUrlDisplay">
+                        <i class="fas fa-link"></i>
+                        <span id="shortUrl"></span>
+                    </div>
+                    <div class="result-actions">
+                        <button class="btn-copy" id="copyBtn">
+                            <i class="fas fa-copy"></i>
+                            Copy
+                        </button>
+                        <button class="btn-qr" id="qrBtn">
+                            <i class="fas fa-qrcode"></i>
+                            QR Code
+                        </button>
+                    </div>
+                </div>
+                <div class="result-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-chart-simple"></i>
+                        <span id="clickCount">0</span>
+                        <small>Total Clicks</small>
+                    </div>
+                    <div class="stat-item">
+                        <i class="far fa-clock"></i>
+                        <span id="createdAt">Just now</span>
+                        <small>Created</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features" id="features">
+    <div class="container">
+        <div class="section-header">
+            <h2>Powerful Features for Modern Teams</h2>
+            <p>Everything you need to manage and optimize your links</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Advanced Analytics</h3>
+                <p>Track clicks, geographic data, devices, and referral sources in real-time.</p>
+                <div class="feature-tag">Coming Soon</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-qrcode"></i>
+                </div>
+                <h3>QR Code Generation</h3>
+                <p>Generate QR codes for your shortened links instantly.</p>
+                <div class="feature-tag">Coming Soon</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-tag"></i>
+                </div>
+                <h3>Custom Aliases</h3>
+                <p>Create memorable short links with custom keywords.</p>
+                <div class="feature-tag">Coming Soon</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Link Expiration</h3>
+                <p>Set expiry dates for temporary campaigns.</p>
+                <div class="feature-tag">Coming Soon</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3>Team Collaboration</h3>
+                <p>Share and manage links with your team members.</p>
+                <div class="feature-tag">Coming Soon</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3>API Access</h3>
+                <p>Integrate URL shortening into your applications.</p>
+                <div class="feature-tag">Coming Soon</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Dashboard Section -->
+<section class="dashboard" id="dashboard">
+    <div class="container">
+        <div class="section-header">
+            <h2>Your Links Dashboard</h2>
+            <p>Manage and monitor all your shortened URLs</p>
+        </div>
+        <div class="dashboard-card">
+            <div class="dashboard-header">
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">All Links</button>
+                    <button class="filter-btn" data-filter="recent">Recent</button>
+                    <button class="filter-btn" data-filter="popular">Most Clicked</button>
+                </div>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search links..." id="searchLinks">
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="links-table" id="linksTable">
+                    <thead>
+                    <tr>
+                        <th>Short URL</th>
+                        <th>Original URL</th>
+                        <th>Clicks</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="linksTableBody">
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <i class="fas fa-link"></i>
+                            <p>No links yet. Create your first shortened URL!</p>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Analytics Section -->
+<section class="analytics" id="analytics">
+    <div class="container">
+        <div class="section-header">
+            <h2>Link Analytics</h2>
+            <p>Detailed insights about your links' performance</p>
+        </div>
+        <div class="analytics-grid">
+            <div class="analytics-card">
+                <div class="analytics-header">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Click Trends</h3>
+                </div>
+                <canvas id="clickChart" height="300"></canvas>
+            </div>
+            <div class="analytics-card">
+                <div class="analytics-header">
+                    <i class="fas fa-globe"></i>
+                    <h3>Top Locations</h3>
+                </div>
+                <div id="locationStats" class="location-stats">
+                    <p class="info-text">Select a link to view analytics</p>
+                </div>
+            </div>
+            <div class="analytics-card">
+                <div class="analytics-header">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h3>Device Breakdown</h3>
+                </div>
+                <canvas id="deviceChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <div class="logo">
+                    <i class="fas fa-link"></i>
+                    <span>SnipURL</span>
+                </div>
+                <p>Transform your URLs into powerful marketing tools.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Product</h4>
+                <a href="#features">Features</a>
+                <a href="#dashboard">Dashboard</a>
+                <a href="#analytics">Analytics</a>
+                <a href="#">Pricing</a>
+            </div>
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <a href="#">Documentation</a>
+                <a href="#">API Reference</a>
+                <a href="#">Support</a>
+                <a href="#">Blog</a>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Security</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 SnipURL. All rights reserved.</p>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-github"></i></a>
+                <a href="#"><i class="fab fa-linkedin"></i></a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
