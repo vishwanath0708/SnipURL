@@ -83,43 +83,43 @@ docker run -d --name snipurl-app \
     docker-compose up -d
 
     version: '3.8'
-services:
-  postgres:
-    image: postgres:15
-    container_name: snipurl-postgres
-    environment:
-      POSTGRES_DB: snipurl
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: secret
-    ports:
-      - "5432:5432"
+    services:
+      postgres:
+        image: postgres:15
+        container_name: snipurl-postgres
+        environment:
+          POSTGRES_DB: snipurl
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: secret
+        ports:
+          - "5432:5432"
+        volumes:
+          - postgres_data:/var/lib/postgresql/data
+        restart: unless-stopped
+      redis:
+        image: redis:7-alpine
+        container_name: snipurl-redis
+        ports:
+          - "6379:6379"
+        restart: unless-stopped
+      app:
+        image: vishwahubballi/snipurl:latest
+        container_name: snipurl-app
+        ports:
+          - "8080:8080"
+        depends_on:
+          - postgres
+          - redis
+        environment:
+          DB_URL: jdbc:postgresql://postgres:5432/snipurl
+          DB_USERNAME: postgres
+          DB_PASSWORD: secret
+          REDIS_HOST: redis
+          REDIS_PORT: 6379
+          JWT_SECRET: your-super-secret-jwt-key-change-this
+        restart: unless-stopped
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
-  redis:
-    image: redis:7-alpine
-    container_name: snipurl-redis
-    ports:
-      - "6379:6379"
-    restart: unless-stopped
-  app:
-    image: vishwahubballi/snipurl:latest
-    container_name: snipurl-app
-    ports:
-      - "8080:8080"
-    depends_on:
-      - postgres
-      - redis
-    environment:
-      DB_URL: jdbc:postgresql://postgres:5432/snipurl
-      DB_USERNAME: postgres
-      DB_PASSWORD: secret
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      JWT_SECRET: your-super-secret-jwt-key-change-this
-    restart: unless-stopped
-volumes:
-  postgres_data:   
+      postgres_data:   
 
 
   
