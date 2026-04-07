@@ -144,26 +144,26 @@ docker run -d --name snipurl-app \
 
 
 ## Structure 
-SnipURL/
-├── pom.xml                          # Maven dependencies & build configuration
-├── application.properties           # Application configuration
-├── src/
-│   ├── main/
-│   │   ├── java/com/url_shortner/SnipURL/
-│   │   │   ├── SnipUrlApplication.java      # Main entry point
-│   │   │   ├── config/                       # Configuration classes
-│   │   │   ├── controller/                   # REST API endpoints
-│   │   │   ├── service/                      # Business logic
-│   │   │   ├── repository/                   # Database operations
-│   │   │   ├── entity/                       # Database tables (JPA)
-│   │   │   ├── dto/                          # Data transfer objects
-│   │   │   ├── security/                     # Authentication & JWT
-│   │   │   ├── exception/                    # Custom exceptions
-│   │   │   └── interceptor/                  # Request interceptors
-│   │   └── resources/
-│   │       ├── templates/                    # HTML pages (Thymeleaf)
-│   │       └── static/                       # CSS, JS, images
-│   └── test/                                 # Unit & integration tests
+    SnipURL/
+    ├── pom.xml                          # Maven dependencies & build configuration
+    ├── application.properties           # Application configuration
+    ├── src/
+    │   ├── main/
+    │   │   ├── java/com/url_shortner/SnipURL/
+    │   │   │   ├── SnipUrlApplication.java      # Main entry point
+    │   │   │   ├── config/                       # Configuration classes
+    │   │   │   ├── controller/                   # REST API endpoints
+    │   │   │   ├── service/                      # Business logic
+    │   │   │   ├── repository/                   # Database operations
+    │   │   │   ├── entity/                       # Database tables (JPA)
+    │   │   │   ├── dto/                          # Data transfer objects
+    │   │   │   ├── security/                     # Authentication & JWT
+    │   │   │   ├── exception/                    # Custom exceptions
+    │   │   │   └── interceptor/                  # Request interceptors
+    │   │   └── resources/
+    │   │       ├── templates/                    # HTML pages (Thymeleaf)
+    │   │       └── static/                       # CSS, JS, images
+    │   └── test/                                 # Unit & integration tests
 
 
 # Controll Flow Summary 
