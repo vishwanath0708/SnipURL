@@ -1,13 +1,6 @@
 pipeline {
 
-    triggers {
-        genericTrigger(
-            token: 'snipurl',
-            genericVariables: [
-                [key: 'ref', value: '$.ref']
-            ]
-        )
-    }
+    
     agent any
     
     environment {
