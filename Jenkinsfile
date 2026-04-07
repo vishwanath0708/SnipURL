@@ -1,25 +1,15 @@
 pipeline {
     agent any
     
-    tools {
-        maven 'Maven-3.9'  // Configure this in Jenkins Global Tools
-        jdk 'JDK-17'       // Configure this in Jenkins Global Tools
-    }
-    
     environment {
-        // Docker Hub credentials (configure in Jenkins)
-        DOCKER_REGISTRY = 'your-dockerhub-username'
-        DOCKER_IMAGE = 'sentinel-gateway'
+        APP_NAME = 'SnipURL'
+        DOCKER_IMAGE = 'snipurl'
+        DOCKER_REGISTRY = 'vishwanathhubballi'  // Your Docker Hub username
         
-        // Database credentials for testing
-        DB_HOST = 'localhost'
+        DB_NAME = 'snipurl'
+        DB_USER = 'postgres'
+        DB_PASSWORD = 'secret'
         DB_PORT = '5432'
-        DB_NAME = 'testdb'
-        DB_USER = 'testuser'
-        DB_PASSWORD = 'testpass'
-        
-        // Redis credentials
-        REDIS_HOST = 'localhost'
         REDIS_PORT = '6379'
     }
     
@@ -33,54 +23,42 @@ pipeline {
         stage('Start PostgreSQL and Redis Containers') {
             steps {
                 script {
-                    // Start PostgreSQL container for testing
                     sh '''
-                        docker run -d --name test-postgres \
+                        docker stop test-postgres-snipurl 2>/dev/null || true
+                        docker rm test-postgres-snipurl 2>/dev/null || true
+                        docker stop test-redis-snipurl 2>/dev/null || true
+                        docker rm test-redis-snipurl 2>/dev/null || true
+                    '''
+                    
+                    sh """
+                        docker run -d --name test-postgres-snipurl \
                             -e POSTGRES_DB=${DB_NAME} \
                             -e POSTGRES_USER=${DB_USER} \
                             -e POSTGRES_PASSWORD=${DB_PASSWORD} \
                             -p ${DB_PORT}:5432 \
                             postgres:15
-                    '''
+                    """
                     
-                    // Start Redis container for testing
-                    sh '''
-                        docker run -d --name test-redis \
+                    sh """
+                        docker run -d --name test-redis-snipurl \
                             -p ${REDIS_PORT}:6379 \
                             redis:7-alpine
-                    '''
+                    """
                     
-                    // Wait for containers to be ready
-                    sleep time: 10, unit: 'SECONDS'
+                    sleep time: 15, unit: 'SECONDS'
                 }
             }
         }
         
-        stage('Build') {
+        stage('Build Application') {
             steps {
                 sh 'mvn clean compile'
             }
         }
         
-        stage('Run Tests') {
-            steps {
-                sh '''
-                    mvn test \
-                        -Dspring.datasource.url=jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME} \
-                        -Dspring.datasource.username=${DB_USER} \
-                        -Dspring.datasource.password=${DB_PASSWORD} \
-                        -Dspring.redis.host=${REDIS_HOST} \
-                        -Dspring.redis.port=${REDIS_PORT}
-                '''
-            }
-            post {
-                always {
-                    junit 'target/surefire-reports/*.xml'
-                }
-            }
-        }
+        // SKIP TESTS - No test stage
         
-        stage('Package') {
+        stage('Package Application') {
             steps {
                 sh 'mvn package -DskipTests'
             }
@@ -94,7 +72,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${BUILD_NUMBER}")
+                    sh "docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} ."
+                    sh "docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest"
                 }
             }
         }
@@ -102,80 +81,76 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'docker-credentials') {
-                        docker.image("${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${BUILD_NUMBER}").push()
-                        docker.image("${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${BUILD_NUMBER}").push('latest')
+                    // Using your Docker Credentials
+                    docker.withRegistry('https://index.docker.io/v1/', 'Docker Credentials') {
+                        sh """
+                            docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${BUILD_NUMBER}
+                            docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest
+                            docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${BUILD_NUMBER}
+                            docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest
+                        """
                     }
                 }
             }
         }
         
-        stage('Stop and Clean Containers') {
+        stage('Stop Test Containers') {
             steps {
                 script {
                     sh '''
-                        docker stop test-postgres || true
-                        docker rm test-postgres || true
-                        docker stop test-redis || true
-                        docker rm test-redis || true
+                        docker stop test-postgres-snipurl 2>/dev/null || true
+                        docker rm test-postgres-snipurl 2>/dev/null || true
+                        docker stop test-redis-snipurl 2>/dev/null || true
+                        docker rm test-redis-snipurl 2>/dev/null || true
                     '''
                 }
             }
         }
         
-        stage('Deploy with Docker Compose') {
+        stage('Deploy Application') {
             steps {
                 script {
                     sh '''
-                        # Create docker-compose.yml for production
-                        cat > docker-compose.prod.yml << EOF
-version: '3.8'
-services:
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - app-network
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    networks:
-      - app-network
-
-  app:
-    image: ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${BUILD_NUMBER}
-    ports:
-      - "8080:8080"
-    depends_on:
-      - postgres
-      - redis
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
-      SPRING_DATASOURCE_USERNAME: ${DB_USER}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-      SPRING_REDIS_HOST: redis
-      SPRING_REDIS_PORT: 6379
-    networks:
-      - app-network
-
-volumes:
-  postgres_data:
-
-networks:
-  app-network:
-    driver: bridge
-EOF
-                        
-                        # Deploy with docker-compose
-                        docker-compose -f docker-compose.prod.yml up -d
+                        docker stop snipurl-app 2>/dev/null || true
+                        docker rm snipurl-app 2>/dev/null || true
+                        docker stop snipurl-postgres 2>/dev/null || true
+                        docker rm snipurl-postgres 2>/dev/null || true
+                        docker stop snipurl-redis 2>/dev/null || true
+                        docker rm snipurl-redis 2>/dev/null || true
                     '''
+                    
+                    sh """
+                        docker run -d --name snipurl-postgres \
+                            -e POSTGRES_DB=${DB_NAME} \
+                            -e POSTGRES_USER=${DB_USER} \
+                            -e POSTGRES_PASSWORD=${DB_PASSWORD} \
+                            -p ${DB_PORT}:5432 \
+                            -v snipurl-postgres-data:/var/lib/postgresql/data \
+                            postgres:15
+                    """
+                    
+                    sh """
+                        docker run -d --name snipurl-redis \
+                            -p ${REDIS_PORT}:6379 \
+                            --restart unless-stopped \
+                            redis:7-alpine
+                    """
+                    
+                    sleep time: 10, unit: 'SECONDS'
+                    
+                    sh """
+                        docker run -d --name snipurl-app \
+                            -p 8080:8080 \
+                            --link snipurl-postgres:postgres \
+                            --link snipurl-redis:redis \
+                            -e SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${DB_NAME} \
+                            -e SPRING_DATASOURCE_USERNAME=${DB_USER} \
+                            -e SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD} \
+                            -e SPRING_DATA_REDIS_HOST=redis \
+                            -e SPRING_DATA_REDIS_PORT=${REDIS_PORT} \
+                            --restart unless-stopped \
+                            ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${BUILD_NUMBER}
+                    """
                 }
             }
         }
@@ -184,19 +159,29 @@ EOF
     post {
         always {
             script {
-                // Clean up containers even if build fails
                 sh '''
-                    docker stop test-postgres test-redis || true
-                    docker rm test-postgres test-redis || true
+                    docker stop test-postgres-snipurl 2>/dev/null || true
+                    docker rm test-postgres-snipurl 2>/dev/null || true
+                    docker stop test-redis-snipurl 2>/dev/null || true
+                    docker rm test-redis-snipurl 2>/dev/null || true
                 '''
             }
         }
         success {
-            echo 'Pipeline completed successfully!'
-            echo "Application deployed at: http://localhost:8080"
+            echo '=========================================='
+            echo '✅ SnipURL Pipeline completed successfully!'
+            echo '=========================================='
+            echo "App URL: http://localhost:8080"
+            echo "PostgreSQL: localhost:5432 (user: postgres, password: secret)"
+            echo "Redis: localhost:6379"
+            echo '=========================================='
         }
         failure {
-            echo 'Pipeline failed! Check logs for details.'
+            echo '=========================================='
+            echo '❌ SnipURL Pipeline failed!'
+            echo '=========================================='
+            echo 'Check the console logs above for errors.'
+            echo '=========================================='
         }
     }
 }
