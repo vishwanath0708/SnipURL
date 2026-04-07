@@ -143,6 +143,52 @@ docker run -d --name snipurl-app \
     APP_BASE_URL	               http://localhost:8080	Application base URL
 
 
+## Structure 
+SnipURL/
+├── pom.xml                          # Maven dependencies & build configuration
+├── application.properties           # Application configuration
+├── src/
+│   ├── main/
+│   │   ├── java/com/url_shortner/SnipURL/
+│   │   │   ├── SnipUrlApplication.java      # Main entry point
+│   │   │   ├── config/                       # Configuration classes
+│   │   │   ├── controller/                   # REST API endpoints
+│   │   │   ├── service/                      # Business logic
+│   │   │   ├── repository/                   # Database operations
+│   │   │   ├── entity/                       # Database tables (JPA)
+│   │   │   ├── dto/                          # Data transfer objects
+│   │   │   ├── security/                     # Authentication & JWT
+│   │   │   ├── exception/                    # Custom exceptions
+│   │   │   └── interceptor/                  # Request interceptors
+│   │   └── resources/
+│   │       ├── templates/                    # HTML pages (Thymeleaf)
+│   │       └── static/                       # CSS, JS, images
+│   └── test/                                 # Unit & integration tests
+
+
+# Controll Flow Summary 
+
+ 1. User visits http://localhost:8080/ → home.html (Public)
+
+2. User clicks "Get Started" → /login → login.html
+
+3. User submits login form → POST /api/auth/login
+   → AuthController → UserDetailsService → JwtUtil → Returns token
+
+4. Frontend stores token in localStorage → Redirects to /dashboard
+
+5. Dashboard loads → GET /api/user/urls (with token)
+   → JwtAuthenticationFilter validates token → UserUrlController → Returns user's URLs
+
+6. User creates short URL → POST /api/shorten (with token)
+   → UrlController → UrlService → Saves to DB → Caches in Redis
+
+7. User clicks short URL → GET /{shortCode}
+   → UrlController → Checks Redis cache → Redirects → ClickTrackingService saves click
+
+8. User views analytics → GET /api/analytics/{code} (with token)
+   → AnalyticsController → AnalyticsService → Queries clicks table → Returns chart data
+
 
 
 
