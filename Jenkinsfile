@@ -13,6 +13,7 @@ pipeline {
             steps {
                 checkout scm
                 echo "testing the CICD pipeline"
+                 echo "testing the CICD pipeline"
                  
             }
         }
