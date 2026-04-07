@@ -20,13 +20,14 @@ pipeline {
             steps {
                 checkout scm
                 echo "testing the CICD pipeline"
-                 echo "testing the CICD pipeline"
+                 
             }
         }
         
         stage('Package') {
             steps {
                 sh 'mvn clean package -DskipTests'
+                echo "testing the CICD pipeline"
             }
         }
         
