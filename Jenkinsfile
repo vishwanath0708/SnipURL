@@ -40,7 +40,7 @@ pipeline {
             steps {
                 script {
                     // Using shell commands instead of docker.withRegistry
-                    withCredentials([usernamePassword(credentialsId: 'docker_credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    withCredentials([usernamePassword(credentialsId: 'dockercredntials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh """
                             echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
                             docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${BUILD_NUMBER}
@@ -50,6 +50,7 @@ pipeline {
                     }
                 }
             }
+            
         }
     }
 }
