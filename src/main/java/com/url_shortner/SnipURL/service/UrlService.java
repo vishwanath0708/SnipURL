@@ -28,7 +28,7 @@ import java.time.format.DateTimeFormatter;
 @Slf4j
 public class UrlService {
 
-    @Value("${app.base-url:http://localhost:8080}")
+    @Value("${app.base-url:https://snipurl-latest.onrender.com}")
     private String baseUrl;
 
     private static final String CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
